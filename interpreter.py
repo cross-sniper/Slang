@@ -17,6 +17,8 @@ class MyInterpreter:
             return self.execute_while_loop(statement)
         elif statement["type"] == "comparison":
             return self.evaluate_comparison(statement)
+        elif statement['type'] == "function_definition":
+            return self.execute_function_definition(statement)
         else:
             raise NotImplementedError(f"Interpreter does not support statements of type {statement['type']}")
 
@@ -54,6 +56,38 @@ class MyInterpreter:
             return input(*args)
         elif func_name == "Format":
             return self.format_string(args)
+        else:
+            raise ValueError(f"Unsupported function call: {func_name}")
+
+    def execute_function_definition(self, func_def):
+        function_name = func_def["name"]
+        parameters = func_def["parameters"]
+        body = func_def["body"]
+        self.variables[function_name] = {"type": "function", "parameters": parameters, "body": body}
+
+    def execute_function_call(self, func_call):
+        func_name = func_call["name"]
+        args = [self.evaluate(arg) for arg in func_call["args"]]
+
+        if func_name == "print":
+            print(*args)
+        elif func_name == "input":
+            return input(*args)
+        elif func_name == "Format":
+            return self.format_string(args)
+        elif func_name in self.variables and self.variables[func_name]["type"] == "function":
+            function_data = self.variables[func_name]
+            # Create a local scope for the function call
+            local_scope = {param: args[i] for i, param in enumerate(function_data["parameters"])}
+            # Add local scope to variables
+            self.variables.update(local_scope)
+            # Execute the function body
+            for stmt in function_data["body"]:
+                result = self.interpret(stmt)
+            # Remove local scope variables
+            for param in function_data["parameters"]:
+                del self.variables[param]
+            return result
         else:
             raise ValueError(f"Unsupported function call: {func_name}")
 

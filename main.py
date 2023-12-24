@@ -43,6 +43,11 @@ class MySyntaxVisitor(ast.NodeVisitor):
 
     def visit_Name(self, node):
         return node.id
+    def visit_FunctionDef(self, node):
+        function_name = node.name
+        parameters = [param.arg for param in node.args.args]
+        body = [self.visit(stmt) for stmt in node.body]
+        return {"type": "function_definition", "name": function_name, "parameters": parameters, "body": body}
 
     def visit_While(self, node):
         condition = self.visit(node.test)
