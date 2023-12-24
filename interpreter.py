@@ -1,5 +1,6 @@
-import json, sys, re
-
+import json
+import sys
+import re
 
 class MyInterpreter:
     def __init__(self):
@@ -14,6 +15,8 @@ class MyInterpreter:
             return self.execute_function_call(statement)
         elif statement["type"] == "while_loop":
             return self.execute_while_loop(statement)
+        elif statement["type"] == "comparison":
+            return self.evaluate_comparison(statement)
         else:
             raise NotImplementedError(f"Interpreter does not support statements of type {statement['type']}")
 
@@ -68,6 +71,23 @@ class MyInterpreter:
             for stmt in while_loop["body"]:
                 result = self.interpret(stmt)
         return result
+
+    def evaluate_comparison(self, comparison):
+        left = self.evaluate(comparison["left"])
+        right = self.evaluate(comparison["right"])
+        op = comparison["op"]
+
+        if op == "<":
+            return left < right
+        elif op == ">":
+            return left > right
+        elif op == "==":
+            return left == right
+        elif op == "!=":
+            return left != right
+        else:
+            raise ValueError(f"Unsupported comparison operation: {op}")
+
 def interpret_custom_syntax(statements):
     interpreter = MyInterpreter()
     for statement in statements:
